@@ -1,2 +1,3 @@
 # hackathonsub
-public repository to review my code, very messy, very basic. 
+public repository to review my code, very messy, very basic. ALSO HAVE TO CLARIFY, THE PARAMATERS PYTHON FILE WAS RUN THRU AI TO CHECK!!! 
+im using this as a foundation, i definitely cannot say that it works 100%, analysis system might be broken :(
