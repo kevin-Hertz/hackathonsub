@@ -1,17 +1,17 @@
-
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Screenertron 9000</title>
+  <title>screenertron 9000</title>
   <style>
+    /*...check CSS styling later...*/
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      background-color: #f4f7fa;
+      font-family: -appl-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif
+      background-colour: #ffffff;
       padding: 2rem;
       margin: 0;
     }
+
     .container {
       max-width: 620px;
       margin: auto;
@@ -20,37 +20,41 @@
       border-radius: 16px;
       box-shadow: 0 6px 20px rgba(0,0,0,0.06);
       overflow: hidden;
-      border: 1px solid #e0e0e0;
+      border: 1px solid #ffffff;
     }
+
     .header {
-      background: linear-gradient(to right, #eaf3ff, #f1f7ff);
+      background: linear-gradient(to right, #ffffff, #ffffff);
       color: #1c3d7a;
       padding: 1.2rem;
       text-align: center;
       font-size: 1.75rem;
       font-weight: 600;
-      border-bottom: 1px solid #c9daf6;
+      border-bottom: 1px solid #ffffff
     }
+
     .content {
       padding: 1.8rem;
     }
+
     textarea {
       width: 100%;
       height: 120px;
       margin-bottom: 1rem;
       padding: 0.75rem;
       font-size: 1rem;
-      border: 1px solid #d0d0d0;
+      border: 1px solid #ffffff
       border-radius: 6px;
-      background-color: #fdfdfd;
-      resize: vertical;
+      background-color: #ffffff;
+      resize: vertifcal;
     }
+
     .file-input-label, .action-button {
       display: inline-block;
       padding: 0.4rem 0.7rem;
-      background-color: #f1f3f5;
+      background-color: #ffffff
       color: #2c3e50;
-      border: 1px solid #ccc;
+      border: 1px solid #ffffff;
       border-radius: 4px;
       cursor: pointer;
       font-size: 0.75rem;
@@ -59,14 +63,10 @@
       transition: background-color 0.2s;
       user-select: none;
     }
+
     .file-input-label:hover, .action-button:hover {
-      background-color: #e1e7ed;
-    }
-    .check-button {
-      padding: 0.75rem 1.5rem;
-      font-size: 1rem;
       background-color: #4a90e2;
-      color: white;
+      color: #ffffff;
       border: none;
       border-radius: 6px;
       margin-top: 0.5rem;
@@ -74,6 +74,19 @@
       user-select: none;
       transition: background-color 0.3s;
     }
+    
+   .check-button {
+     padding: 0.75rem 1.5rem;
+     font-size: 1rem;
+     background-color: #4a90e2;
+     color: #ffffff;
+     border: none;
+     border-radius: 6px;
+     margin-top: 0.5rem;
+     cursor: pointer;
+     user-select: none;
+     transition: background color 0.3s
+   }
     .check-button:hover {
       background-color: #3c7dc1;
     }
@@ -102,7 +115,7 @@
       margin-bottom: 1rem;
       display: none;
     }
-    
+    /* Result dialog */
     #resultDialog {
       position: fixed;
       top: 50%;
@@ -177,175 +190,148 @@
       <button class="file-input-label" id="extractBtn" disabled>Extract Text</button>
 
       <textarea id="messageInput" placeholder="Or paste message here..."></textarea>
-      <button class="check-button" id="checkBtn">Check Message</button>
+      <button id="checkBtn" class="check-button">Check for Scam</button>
 
-      <div id="loadingText" class="loading" style="display:none;">Processing...</div>
+      <div id="loading" class="loading" style="display:none;">Analyzing...</div>
     </div>
   </div>
 
-  <div id="resultDialog" role="dialog" aria-modal="true" aria-labelledby="resultTitle" aria-describedby="resultDesc" tabindex="-1">
-    <div class="header">
-      <span id="resultIcon" class="icon">⚠️</span>
-      <span id="resultTitle"></span>
-    </div>
-    <div id="resultDesc"></div>
-    <button class="close-btn" id="closeDialogBtn">Close</button>
-  </div>
+  <dialog id="resultDialog" role="alertdialog" aria-modal="true" aria-labelledby="resultTitle" aria-describedby="resultDetails">
+    <div class="header" id="resultTitle"></div>
+    <div id="resultDetails"></div>
+    <button class="close-btn" aria-label="Close results dialog">Close</button>
+  </dialog>
 
-  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
-
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4.0.2/dist/tesseract.min.js"></script>
   <script>
-    const imageInput = document.getElementById('imageInput');
     const dropzone = document.getElementById('dropzone');
+    const imageInput = document.getElementById('imageInput');
     const imagePreview = document.getElementById('imagePreview');
     const extractBtn = document.getElementById('extractBtn');
     const messageInput = document.getElementById('messageInput');
     const checkBtn = document.getElementById('checkBtn');
-    const loadingText = document.getElementById('loadingText');
+    const loadingIndicator = document.getElementById('loading');
     const resultDialog = document.getElementById('resultDialog');
-    const resultIcon = document.getElementById('resultIcon');
     const resultTitle = document.getElementById('resultTitle');
-    const resultDesc = document.getElementById('resultDesc');
-    const closeDialogBtn = document.getElementById('closeDialogBtn');
+    const resultDetails = document.getElementById('resultDetails');
+    const closeBtn = resultDialog.querySelector('.close-btn');
 
-    // Helper to show dialog
-    function showResultDialog(isScam, scamType, redFlags) {
-      resultDialog.classList.add('show');
-      if (isScam) {
-        resultDialog.style.backgroundColor = '#c0392b'; // red
-        resultIcon.textContent = '🚨';
-        resultTitle.textContent = `Scam detected: ${scamType}`;
-      } else {
-        resultDialog.style.backgroundColor = '#27ae60'; // green
-        resultIcon.textContent = '✅';
-        resultTitle.textContent = 'Message appears safe';
-      }
+    let extractedText = '';
 
-      if (isScam && redFlags.length) {
-        const flagsHtml = redFlags.map(flag => `<li>${flag}</li>`).join('');
-        resultDesc.innerHTML = `<strong>Red Flags:</strong><ul>${flagsHtml}</ul>`;
-      } else {
-        resultDesc.innerHTML = '';
-      }
-      resultDialog.focus();
-    }
-
-    closeDialogBtn.addEventListener('click', () => {
-      resultDialog.classList.remove('show');
-    });
-
-    // Drag & drop events
-    dropzone.addEventListener('click', () => imageInput.click());
-
-    dropzone.addEventListener('dragover', e => {
+    // Drag & drop handlers
+    dropzone.addEventListener('dragover', (e) => {
       e.preventDefault();
       dropzone.classList.add('dragover');
     });
-
-    dropzone.addEventListener('dragleave', e => {
-      e.preventDefault();
+    dropzone.addEventListener('dragleave', () => {
       dropzone.classList.remove('dragover');
     });
-
-    dropzone.addEventListener('drop', e => {
+    dropzone.addEventListener('drop', (e) => {
       e.preventDefault();
       dropzone.classList.remove('dragover');
-
-      const files = e.dataTransfer.files;
-      if (files.length > 0) {
-        imageInput.files = files; // Set the dropped file to file input
-        handleImage(files[0]);
+      if (e.dataTransfer.files.length) {
+        handleFile(e.dataTransfer.files[0]);
       }
     });
+    dropzone.addEventListener('click', () => {
+      imageInput.click();
+    });
 
+    // File input change
     imageInput.addEventListener('change', () => {
-      if (imageInput.files.length > 0) {
-        handleImage(imageInput.files[0]);
+      if (imageInput.files.length) {
+        handleFile(imageInput.files[0]);
       }
     });
 
-    function handleImage(file) {
+    function handleFile(file) {
       if (!file.type.startsWith('image/')) {
-        alert('Please select an image file.');
-        imageInput.value = '';
-        imagePreview.style.display = 'none';
-        extractBtn.disabled = true;
+        alert('Please upload an image file.');
         return;
       }
       const reader = new FileReader();
-      reader.onload = e => {
-        imagePreview.src = e.target.result;
+      reader.onload = function (event) {
+        imagePreview.src = event.target.result;
         imagePreview.style.display = 'block';
         extractBtn.disabled = false;
+        extractedText = '';
+        messageInput.value = '';
       };
       reader.readAsDataURL(file);
-      messageInput.value = '';
     }
 
-    extractBtn.addEventListener('click', async () => {
-      if (!imageInput.files.length) {
-        alert('Please select an image first.');
-        return;
-      }
-      loadingText.style.display = 'block';
+    extractBtn.addEventListener('click', () => {
+      if (!imagePreview.src) return;
+      loadingIndicator.style.display = 'block';
       extractBtn.disabled = true;
-      checkBtn.disabled = true;
       messageInput.value = '';
-
-      try {
-        const { data: { text } } = await Tesseract.recognize(imageInput.files[0], 'eng', {
-          logger: m => {
-            
-          }
-        });
-        messageInput.value = text.trim();
-      } catch (err) {
-        alert('Error extracting text from image.');
-        console.error(err);
-      }
-
-      loadingText.style.display = 'none';
-      extractBtn.disabled = false;
-      checkBtn.disabled = false;
+      Tesseract.recognize(imagePreview.src, 'eng', {
+        logger: m => {
+          // Optional: console.log(m);
+        }
+      }).then(({ data: { text } }) => {
+        extractedText = text.trim();
+        messageInput.value = extractedText;
+        loadingIndicator.style.display = 'none';
+        extractBtn.disabled = false;
+      }).catch(err => {
+        alert('Failed to extract text from image.');
+        loadingIndicator.style.display = 'none';
+        extractBtn.disabled = false;
+      });
     });
 
-    checkBtn.addEventListener('click', async () => {
-      const message = messageInput.value.trim();
-      if (!message) {
-        alert('Please enter or extract a message to check.');
+    checkBtn.addEventListener('click', () => {
+      let textToAnalyze = messageInput.value.trim();
+      if (!textToAnalyze) {
+        alert('Please provide a message to analyze.');
         return;
       }
-
-      loadingText.style.display = 'block';
+      loadingIndicator.style.display = 'block';
       checkBtn.disabled = true;
-      extractBtn.disabled = true;
 
-      await new Promise(r => setTimeout(r, 500));
-
-      try {
-        const response = await fetch('http://localhost:5000/analyze', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({ message })
-        });
-        const data = await response.json();
-
-        if (response.ok) {
-          // Show results dialog
-          showResultDialog(data.is_scam, data.scam_type, data.red_flags || []);
-        } else {
-          alert(data.error || 'Failed to analyze message.');
+      fetch('http://localhost:5000/analyze', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ message: textToAnalyze })
+      }).then(async response => {
+        loadingIndicator.style.display = 'none';
+        checkBtn.disabled = false;
+        if (!response.ok) {
+          const error = await response.json();
+          alert(error.error || 'Failed to analyze message.');
+          return;
         }
-      } catch (err) {
-        alert('Error connecting to analysis service.');
-        console.error(err);
-      }
+        const data = await response.json();
+        showResultDialog(data);
+      }).catch(() => {
+        loadingIndicator.style.display = 'none';
+        checkBtn.disabled = false;
+        alert('Failed to connect to the analysis server. Is it running?');
+      });
+    });
 
-      loadingText.style.display = 'none';
-      checkBtn.disabled = false;
-      extractBtn.disabled = false;
+    function showResultDialog(data) {
+      if (data.is_scam) {
+        resultDialog.style.backgroundColor = '#d1443e'; // red
+        resultTitle.innerHTML = `🚨 Scam Detected: ${data.scam_type.toUpperCase()}`;
+        let flagsHtml = '';
+        if (data.red_flags.length) {
+          flagsHtml = '<ul>' + data.red_flags.map(flag => `<li>${flag}</li>`).join('') + '</ul>';
+        }
+        resultDetails.innerHTML = `Red flags:<br>${flagsHtml}`;
+      } else {
+        resultDialog.style.backgroundColor = '#388e3c'; // green
+        resultTitle.textContent = '✅ No Scam Detected';
+        resultDetails.textContent = 'This message does not appear to be a scam.';
+      }
+      resultDialog.showModal();
+    }
+
+    closeBtn.addEventListener('click', () => {
+      resultDialog.close();
     });
   </script>
 </body>
