@@ -3,9 +3,9 @@ import re
 from flask_cors import CORS
 
 app = Flask(__name__)
-CORS(app)  # Allow cross-origin requests from frontend
+CORS(app)  
 
-# Indicators for different scam types
+
 detection_rules = {
     "romance scam": [
         r"(?i)I'?ve been thinking about you",
