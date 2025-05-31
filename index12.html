@@ -2,16 +2,15 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>screenertron 9000</title>
+  <title>Screenertron 9000</title>
   <style>
-    
+  
     body {
-      font-family: -appl-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif
-      background-colour: #ffffff;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: #f4f7fa;
       padding: 2rem;
       margin: 0;
     }
-
     .container {
       max-width: 620px;
       margin: auto;
@@ -20,41 +19,37 @@
       border-radius: 16px;
       box-shadow: 0 6px 20px rgba(0,0,0,0.06);
       overflow: hidden;
-      border: 1px solid #ffffff;
+      border: 1px solid #e0e0e0;
     }
-
     .header {
-      background: linear-gradient(to right, #ffffff, #ffffff);
+      background: linear-gradient(to right, #eaf3ff, #f1f7ff);
       color: #1c3d7a;
       padding: 1.2rem;
       text-align: center;
       font-size: 1.75rem;
       font-weight: 600;
-      border-bottom: 1px solid #ffffff
+      border-bottom: 1px solid #c9daf6;
     }
-
     .content {
       padding: 1.8rem;
     }
-
     textarea {
       width: 100%;
       height: 120px;
       margin-bottom: 1rem;
       padding: 0.75rem;
       font-size: 1rem;
-      border: 1px solid #ffffff
+      border: 1px solid #d0d0d0;
       border-radius: 6px;
-      background-color: #ffffff;
-      resize: vertifcal;
+      background-color: #fdfdfd;
+      resize: vertical;
     }
-
     .file-input-label, .action-button {
       display: inline-block;
       padding: 0.4rem 0.7rem;
-      background-color: #ffffff
+      background-color: #f1f3f5;
       color: #2c3e50;
-      border: 1px solid #ffffff;
+      border: 1px solid #ccc;
       border-radius: 4px;
       cursor: pointer;
       font-size: 0.75rem;
@@ -63,10 +58,14 @@
       transition: background-color 0.2s;
       user-select: none;
     }
-
     .file-input-label:hover, .action-button:hover {
+      background-color: #e1e7ed;
+    }
+    .check-button {
+      padding: 0.75rem 1.5rem;
+      font-size: 1rem;
       background-color: #4a90e2;
-      color: #ffffff;
+      color: white;
       border: none;
       border-radius: 6px;
       margin-top: 0.5rem;
@@ -74,19 +73,6 @@
       user-select: none;
       transition: background-color 0.3s;
     }
-    
-   .check-button {
-     padding: 0.75rem 1.5rem;
-     font-size: 1rem;
-     background-color: #4a90e2;
-     color: #ffffff;
-     border: none;
-     border-radius: 6px;
-     margin-top: 0.5rem;
-     cursor: pointer;
-     user-select: none;
-     transition: background color 0.3s
-   }
     .check-button:hover {
       background-color: #3c7dc1;
     }
@@ -115,7 +101,7 @@
       margin-bottom: 1rem;
       display: none;
     }
-    /* Result dialog */
+   
     #resultDialog {
       position: fixed;
       top: 50%;
@@ -204,6 +190,33 @@
 
   <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4.0.2/dist/tesseract.min.js"></script>
   <script>
+  document.getElementById("analyze-btn").addEventListener("click", () => {
+    const imageInput = document.getElementById("image-input");
+    const file = imageInput.files[0];
+    const reader = new FileReader();
+
+    reader.onloadend = () => {
+      fetch("/analyze", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ image: reader.result })
+      })
+        .then(res => res.json())
+        .then(data => {
+          console.log(data); 
+        })
+        .catch(err => {
+          console.error("Error:", err);
+          alert("Failed to connect to the analysis server. Is it running?");
+        });
+    };
+
+    if (file) reader.readAsDataURL(file);
+  });
+</script>
+
+  <script>
+    
     const dropzone = document.getElementById('dropzone');
     const imageInput = document.getElementById('imageInput');
     const imagePreview = document.getElementById('imagePreview');
@@ -237,7 +250,7 @@
       imageInput.click();
     });
 
-    
+   
     imageInput.addEventListener('change', () => {
       if (imageInput.files.length) {
         handleFile(imageInput.files[0]);
@@ -314,21 +327,23 @@
     });
 
     function showResultDialog(data) {
-      if (data.is_scam) {
-        resultDialog.style.backgroundColor = '#d1443e'; // red
-        resultTitle.innerHTML = `🚨 Scam Detected: ${data.scam_type.toUpperCase()}`;
-        let flagsHtml = '';
-        if (data.red_flags.length) {
-          flagsHtml = '<ul>' + data.red_flags.map(flag => `<li>${flag}</li>`).join('') + '</ul>';
-        }
-        resultDetails.innerHTML = `Red flags:<br>${flagsHtml}`;
-      } else {
-        resultDialog.style.backgroundColor = '#388e3c'; // green
-        resultTitle.textContent = '✅ No Scam Detected';
-        resultDetails.textContent = 'This message does not appear to be a scam.';
-      }
-      resultDialog.showModal();
+  if (data.is_scam) {
+    resultDialog.style.backgroundColor = '#d1443e'; // red
+    resultTitle.innerHTML = `🚨 Scam Detected: ${data.scam_type.toUpperCase()}`;
+    let flagsHtml = '';
+    if (data.red_flags.length) {
+      flagsHtml = '<ul>' + data.red_flags.map(flag => `<li>${flag}</li>`).join('') + '</ul>';
     }
+    resultDetails.innerHTML = `Red flags:<br>${flagsHtml}`;
+  } else {
+    resultDialog.style.backgroundColor = '#388e3c'; // green
+    resultTitle.textContent = '✅ No Scam Detected';
+    resultDetails.textContent = 'This message does not appear to be a scam.';
+  }
+
+  resultDialog.classList.add('show');
+  resultDialog.showModal();
+}
 
     closeBtn.addEventListener('click', () => {
       resultDialog.close();
