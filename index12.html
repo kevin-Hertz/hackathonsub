@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <title>screenertron 9000</title>
   <style>
-    /*...check CSS styling later...*/
+    
     body {
       font-family: -appl-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif
       background-colour: #ffffff;
@@ -218,7 +218,7 @@
 
     let extractedText = '';
 
-    // Drag & drop handlers
+    
     dropzone.addEventListener('dragover', (e) => {
       e.preventDefault();
       dropzone.classList.add('dragover');
@@ -237,7 +237,7 @@
       imageInput.click();
     });
 
-    // File input change
+    
     imageInput.addEventListener('change', () => {
       if (imageInput.files.length) {
         handleFile(imageInput.files[0]);
@@ -267,7 +267,7 @@
       messageInput.value = '';
       Tesseract.recognize(imagePreview.src, 'eng', {
         logger: m => {
-          // Optional: console.log(m);
+          
         }
       }).then(({ data: { text } }) => {
         extractedText = text.trim();
